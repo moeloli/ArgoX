@@ -10,7 +10,7 @@ WORK_DIR='/etc/argox'
 TEMP_DIR='/tmp/argox'
 TLS_SERVER=addons.mozilla.org
 METRICS_PORT='3333'
-CDN_DOMAIN=("8cc.free.hr" "cm.yutian.us.kg" "fan.yutian.us.kg" "xn--b6gac.eu.org" "dash.cloudflare.com" "skk.moe" "visa.com")
+CDN_DOMAIN=("skk.moe" "ip.sb" "time.is" "cfip.xxxxxxxx.tk" "bestcf.top" "cdn.2020111.xyz" "xn--b6gac.eu.org")
 SUBSCRIBE_TEMPLATE="https://raw.githubusercontent.com/fscarmen/client_template/main"
 
 export DEBIAN_FRONTEND=noninteractive
@@ -206,9 +206,22 @@ check_chatgpt() {
 
 # 脚本当天及累计运行次数统计
 statistics_of_run-times() {
-  local COUNT=$(wget --no-check-certificate -qO- --tries=2 --timeout=2 "https://hit.forvps.gq/https://raw.githubusercontent.com/fscarmen/ArgoX/main/argox.sh" 2>&1 | grep -m1 -oE "[0-9]+[ ]+/[ ]+[0-9]+") &&
-  TODAY=$(cut -d " " -f1 <<< "$COUNT") &&
-  TOTAL=$(cut -d " " -f3 <<< "$COUNT")
+  local SCRIPT=argox.sh
+  local RESPONSE1=$(curl -sm3 "https://us-central1-script-usage-statistics.cloudfunctions.net/updateStats?script=${SCRIPT}" | grep 'todayCount')
+
+  if [[ $RESPONSE1 =~ \"todayCount\":([0-9]+),\"totalCount\":([0-9]+) ]]; then
+    TODAY="${BASH_REMATCH[1]}"
+    TOTAL="${BASH_REMATCH[2]}"
+  else
+    local RESPONSE2=$(curl -sm3 "https://hit.forvps.gq/updateStats?script=${SCRIPT}")
+    if [[ $RESPONSE2 =~ \"todayCount\":([0-9]+),\"totalCount\":([0-9]+) ]]; then
+      TODAY="${BASH_REMATCH[1]}"
+      TOTAL="${BASH_REMATCH[2]}"
+    else
+      TODAY=""
+      TOTAL=""
+    fi
+  fi
 }
 
 # 选择中英语言
